@@ -1,0 +1,40 @@
+package dukeProgramming;
+
+public class caesarCipher {
+	
+	public void encode(String str, int keyValue){
+		
+		String alphabetUpper = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+		String alphabetLower = alphabetUpper.toLowerCase();
+		String conAlphabet = alphabetUpper + alphabetLower;
+		System.out.println(conAlphabet);
+		
+		String encr1 = alphabetUpper.substring(keyValue);
+		encr1 = encr1 + alphabetUpper.substring(0,keyValue);
+		String encr2 = alphabetLower.substring(keyValue);
+		encr2 = encr2 + alphabetLower.substring(0, keyValue);
+		String encr = encr1 + encr2;
+		System.out.println(encr);
+		
+		StringBuilder result = new StringBuilder();
+		
+		for(int k = 0; k<str.length(); k++){
+			int oriIndex=0;
+			int asciiChar = (int)str.charAt(k);
+			if((65<=asciiChar && asciiChar<=90)||(97<=asciiChar && asciiChar<=122) ){
+				oriIndex = conAlphabet.indexOf(str.charAt(k));
+				result.append(encr.charAt(oriIndex));
+			}
+			else
+				result.append(str.charAt(k));
+		}
+		System.out.println(result);
+	}
+	
+	public static void main(String[] args) {
+		caesarCipher cc = new caesarCipher();
+		String string = "At noon be in the conference room with your hat on for a surprise party. YELL LOUD!";
+		cc.encode(string, 3);
+	}
+
+}
