@@ -1,0 +1,68 @@
+=====================================first week problems============================================
+package dukeProgramming;
+
+public class twoKeyDecryption {
+
+	private String alphabetTable,s1encr,s2encr;
+	private StringBuilder encrResult,decrResult;
+	
+	public twoKeyDecryption(){
+		alphabetTable = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+		encrResult = new StringBuilder();
+		decrResult = new StringBuilder();
+	}
+	
+	public String encrypt(String str, int k1, int k2){
+		System.out.println("For reference:");
+		s1encr = alphabetTable.substring(k1)+alphabetTable.substring(0,k1);
+		s1encr = s1encr + s1encr.toLowerCase();
+		s2encr = alphabetTable.substring(k2)+alphabetTable.substring(0,k2);
+		s2encr = s2encr + s2encr.toLowerCase();
+		alphabetTable = alphabetTable + alphabetTable.toLowerCase();
+		System.out.println(alphabetTable);
+		System.out.println(s1encr);
+		System.out.println(s2encr);
+		
+		for(int i=0;i<str.length();i++){
+			char ch = str.charAt(i);
+			if((ch>=65 && ch<90) || (ch>=97 && ch<=122)){
+				if(i%2==0){
+					encrResult.append(s1encr.charAt(alphabetTable.indexOf(str.charAt(i))));
+				}
+				else
+					encrResult.append(s2encr.charAt(alphabetTable.indexOf(str.charAt(i))));
+				}
+			else 
+				encrResult.append(str.charAt(i));
+		}
+		System.out.println(encrResult);
+		return encrResult.toString();
+	}
+	
+	public String decrypt(String str){
+		for(int i=0;i<str.length();i++){
+			char ch = str.charAt(i);
+			if((ch>=65 && ch<90) || (ch>=97 && ch<=122)){
+				if(i%2==0){
+					decrResult.append(alphabetTable.charAt(s1encr.indexOf(ch)));
+				}
+				else
+					decrResult.append(alphabetTable.charAt(s2encr.indexOf(ch)));				
+			}
+			else
+				decrResult.append(str.charAt(i));
+		}
+		System.out.println(decrResult);
+		return decrResult.toString();
+	}
+	
+	public static void main(String[] args) {
+		// TODO Auto-generated method stub
+		twoKeyDecryption tkd = new twoKeyDecryption();
+		String strin1 = "Please input the string you want to encrypt here";
+		String encryptS = tkd.encrypt(strin1, 2, 20);
+		String problem = "Top ncmy qkff vi vguv vbg ycpx";
+		tkd.decrypt(problem);
+	}
+
+}
