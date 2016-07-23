@@ -1,1 +1,53 @@
 ============================================first week problems========================================================================
+package dukeProgramming;
+
+public class twoKeyDecryption {
+
+	private String alphabetTable,s1encr,s2encr;
+	private StringBuilder encrResult,decrResult;
+	
+	public twoKeyDecryption(){
+		alphabetTable = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+		encrResult = new StringBuilder();
+		decrResult = new StringBuilder();
+	}
+	
+	
+	//reserve encryption, then you can decrypt the code
+	public String encrypt(String str, int k1, int k2){
+		System.out.println("k1: " + k1 + ",k2: " + k2);
+		s1encr = alphabetTable.substring(k1)+alphabetTable.substring(0,k1);
+		s1encr = s1encr + s1encr.toLowerCase();
+		s2encr = alphabetTable.substring(k2)+alphabetTable.substring(0,k2);
+		s2encr = s2encr + s2encr.toLowerCase();
+		alphabetTable = alphabetTable + alphabetTable.toLowerCase();
+
+		for(int i=0;i<str.length();i++){
+			char ch = str.charAt(i);
+			if((ch>=65 && ch<90) || (ch>=97 && ch<=122)){
+				if(i%2==0){
+					encrResult.append(s1encr.charAt(alphabetTable.indexOf(str.charAt(i))));
+				}
+				else
+					encrResult.append(s2encr.charAt(alphabetTable.indexOf(str.charAt(i))));
+				}
+			else 
+				encrResult.append(str.charAt(i));
+		}
+		System.out.println(encrResult);
+		return encrResult.toString();
+	}
+	
+	public static void main(String[] args) {
+		String strin1 = "Please input the string when you want decrypt";
+		//26*26 possible solution needed to be solved as eyeball detection
+		for(int k1=0; k1<26;k1++){
+			for(int k2=0; k2<26; k2++){
+				twoKeyDecryption tkd = new twoKeyDecryption();
+				tkd.encrypt(strin1, k1, k2);
+			}
+		}
+		//When applying to eyeball detection, you get two keys, 26-k1 and 26-k2 respectively
+	}
+
+}
