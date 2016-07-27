@@ -1,0 +1,78 @@
+=====================================================second week problems================================================================
+package gradLibs_secondweek;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.util.HashMap;
+
+public class dna {
+	
+	private String codon, reString;
+	private StringBuilder result;
+	private HashMap<String, Integer> codonMap;
+	private int count;
+	
+	public dna(){
+		count = 0;
+		codon = null;
+		result = new StringBuilder();
+		reString = null;
+		codonMap =new HashMap<String, Integer>();
+	}
+	
+	
+	public void readFrame(int shift){
+		String ss = reString.substring(shift);
+		for(int i = 0 ; i+2<ss.length(); i = i+3){
+			codon = "" + ss.charAt(i)+ss.charAt(i+1)+ss.charAt(i+2);
+			System.out.print(codon + " ");
+			if(!codonMap.keySet().contains(codon)){
+				codonMap.put(codon, 1);
+			}
+			else{
+				codonMap.put(codon, codonMap.get(codon)+1);
+			}
+		}
+		for(String cd : codonMap.keySet()){
+			if(codonMap.get(cd) == 1){
+				count++;
+			}
+		}
+		System.out.println(count);
+	}
+	
+	public String txt2String(File file){
+        try{
+        	//read in the file
+            BufferedReader br = new BufferedReader(new FileReader(file));
+            String s = null;
+            //each turn with one line scanning
+            while((s = br.readLine())!=null){
+            	result.append(System.lineSeparator()+s);
+           	}
+            br.close();    
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+        reString = result.toString().trim();
+        return reString;
+    }
+	
+	public void printMap(){
+		for(String cc : codonMap.keySet()){
+			System.out.println(cc + ":" + codonMap.get(cc) );
+		}
+	}
+	
+	public static void main(String[] args) {
+		// TODO Auto-generated method stub
+		File file = new File("F:/Java/dukeProgramming/src/gradLibs_secondweek/dnaMystery1.txt");
+		dna d = new dna();
+		String ss = d.txt2String(file);
+		System.out.println(ss);
+		d.readFrame(1);
+		d.printMap();
+	}
+
+}
