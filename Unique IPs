@@ -1,0 +1,241 @@
+=====================================================third week problems==================================================================
+package webServerLogs_thirdweek;
+
+import java.util.Date;
+
+public class LogEntry {
+	private String ipAddress;
+	private String accessTime;
+	private String request;
+	private int statusCode;
+	private int bytesReturned;
+	
+	public LogEntry(String ip, String time, String req, int stat, int bytes){
+		ipAddress = ip;
+		accessTime = time;
+		request = req;
+		statusCode = stat;
+		bytesReturned = bytes;
+	}
+	
+	public String getIpAddress() {
+		return ipAddress;
+	}
+	public String getAccessTime() {
+		return accessTime;
+	}
+	public String getRequest() {
+		return request;
+	}
+	public int getStatusCode() {
+		return statusCode;
+	}
+	public int getBytesReturned() {
+		return bytesReturned;
+	}
+
+	@Override
+	public String toString() {
+		return "LogEntry [ipAddress=" + ipAddress + ", accessTime="
+				+ accessTime + ", request=" + request + ", statusCode="
+				+ statusCode + ", bytesReturned=" + bytesReturned + "]";
+	}
+	
+}
+
+*******************************************************************************
+package webServerLogs_thirdweek;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+public class LogAnalyzer {
+	
+	private ArrayList<LogEntry> records;
+	private String ip;
+	private String time;
+	private String req;
+	private int stat;
+	private int bytes;
+	
+	public LogAnalyzer(){
+		records = new ArrayList<LogEntry>();
+	}
+	
+	//return an integer representing the number of unique IP addresses
+	public int countUniqueIPs(){
+		ArrayList<String> IpList =new ArrayList<String>();
+		for(LogEntry le : records){
+			String targetIp = le.getIpAddress();
+			if(!IpList.contains(targetIp)){
+				IpList.add(targetIp);
+			}
+			else
+				continue;
+		}
+		return IpList.size();
+	}
+	
+	public void printAllHigherThanNum(int num){
+		for(LogEntry le : records){
+//			System.out.println(le.getStatusCode());
+			if(le.getStatusCode()>num){
+//				System.out.println("Yes");
+				System.out.println(le.toString());
+			}
+		}
+	}
+
+//	public void IpMapOnDay(){
+//		HashMap<String, Integer> ipMap = new HashMap<String, Integer>();
+//		for(LogEntry le : records){
+//			String ss = le.getAccessTime();
+//			if(!ipMap.containsKey(ss)){
+//				ipMap.put(ss,1);
+//			}
+//			else{
+//				ipMap.put(ss, ipMap.get(ss)+1);
+//			}
+//				
+//		}
+//		for(String s : ipMap.keySet()){
+//			System.out.println(s + " " + ipMap.get(s));
+//		}
+//	}
+	
+	public ArrayList<String> uniqueIPVisitsOnDay(String someday){
+		ArrayList<String> IpListOnDay =new ArrayList<String>();
+		for(LogEntry le : records){
+			if(le.getAccessTime().equals(someday)){
+				String targetIp = le.getIpAddress();
+				if(!IpListOnDay.contains(targetIp)){
+					IpListOnDay.add(targetIp);
+				}
+				else
+					continue;
+			}
+		}
+		return IpListOnDay;
+	}
+	
+	public int countUniqueIPsInRange(int low, int high){
+		ArrayList<String> IpListInRange =new ArrayList<String>();
+		for(LogEntry le : records){
+			int statCode = le.getStatusCode();
+			if(statCode>=low && statCode<=high){
+				String targetIp = le.getIpAddress();
+				if(!IpListInRange.contains(targetIp)){
+					IpListInRange.add(targetIp);
+				}
+				else
+					continue;
+			}
+		}
+		return IpListInRange.size();
+	}
+	
+	public String txtAnalyzer(File file){
+        StringBuilder result = new StringBuilder();
+        try{
+        	//read in the file
+            BufferedReader br = new BufferedReader(new FileReader(file));
+            String s = null;
+            //each turn with one line scanning
+            while((s = br.readLine())!=null){
+            	//trim() method
+            	s = s.trim();
+        		String regexIp = "\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}";
+        		String regexDate = "\\d{2}\\/\\b[a-zA-Z]{3}\\b\\/\\d{4}\\:\\d{2}\\:\\d{2}\\:\\d{2}";
+        		String regexReq = "\"(.*?)\"";
+        		
+        		Pattern patternIp = Pattern.compile(regexIp);
+        		Pattern patternDate = Pattern.compile(regexDate);
+        		Pattern patternReq = Pattern.compile(regexReq);
+        		
+        		Matcher matchIp = patternIp.matcher(s); 
+        		Matcher matchDate = patternDate.matcher(s);
+        		Matcher matchReq = patternReq.matcher(s);
+        	    while (matchIp.find()) {  
+        	        ip=matchIp.group();  
+        	    }
+        	    while (matchDate.find()) {
+        	    	//convert String to Date
+        	    	String ss = matchDate.group();
+           		
+        	    	String day = "" + ss.charAt(0)+ ss.charAt(1);
+        	    	String month = "" + ss.charAt(3)+ss.charAt(4)+ss.charAt(5);
+        	    	
+        	    	time = month + " " + day;   
+        	    }
+        	    while (matchReq.find()) {  
+        	        req = matchReq.group();  
+        	    }
+        	    String[] sArray = s.split(" ");
+        	    stat = Integer.parseInt(sArray[sArray.length-2]);
+        	    bytes = Integer.parseInt(sArray[sArray.length-1]);
+        	    LogEntry le = new LogEntry(ip, time, req, stat, bytes);
+        	    records.add(le);
+
+         	}
+            br.close();
+        }
+        catch(Exception e){
+        	e.printStackTrace();
+        }
+        return result.toString();
+    }
+	
+
+}
+*********************************************************************************************
+package webServerLogs_thirdweek;
+
+import java.io.File;
+import java.util.ArrayList;
+
+public class Tester {
+	LogAnalyzer la; 
+			
+	public Tester(){
+		la = new LogAnalyzer();
+		File logfile = new File("F:/Java/dukeProgramming/src/webServerLogs_thirdweek/weblog1_log.txt");
+		la.txtAnalyzer(logfile);
+	}
+	
+	public void testUniqueIP(){
+		int UniqueIpNum = la.countUniqueIPs();
+		System.out.println(UniqueIpNum);
+	}
+	
+	public void printValidLogEntry(int num){
+		la.printAllHigherThanNum(num);
+	}
+	
+	public void rangeCount(int low, int high){
+		System.out.println(la.countUniqueIPsInRange(low, high));
+	}
+	
+	public ArrayList<String> testUniqueIPVisitsOnDay(String date){
+		return la.uniqueIPVisitsOnDay(date);
+	}
+	public static void main(String[] args) {
+		Tester test = new Tester();
+		test.testUniqueIP();
+		test.printValidLogEntry(400);
+		String date = "Mar 24";
+		test.testUniqueIPVisitsOnDay(date);
+		int count=test.testUniqueIPVisitsOnDay(date).size();
+		System.out.println(count);
+		test.rangeCount(200, 299);
+	}
+
+}
+**********************************************************************************
