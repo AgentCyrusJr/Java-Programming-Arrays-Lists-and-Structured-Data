@@ -1,0 +1,254 @@
+===================================================================mini project=======================================================
+//main method
+//VigenereCipher.java
+package VigenereCipher_final;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.HashMap;
+
+public class VigenereCipher {
+	
+	private caesarCipher cc;
+	private caesarCracker cd;
+	private int num;
+	private int[] key; 
+	
+	//Constructor...
+	public VigenereCipher(int[] key){
+		System.out.println("Construct a VigenereCipher mini project with an array of keys ...");
+		num = key.length; 
+		this.key = key;		
+	}
+
+	public String encrypt(File file){
+		fileProcess fp = new fileProcess();
+		//turn txt to String
+		String str = fp.file2String(file);
+		String result = this.helpEncrypt(str);
+		return result;
+	}
+	 
+	//decrypt each slices and combine them into one
+	public String decrypt(String input){
+		HashMap<Integer, String> sliceDecrMap = new HashMap<Integer, String>();
+		for(int i = 0; i<num ; i++){
+			String slice = this.sliceString(input, i, num);
+			cd = new caesarCracker();
+			//core method in decryption
+			slice = cd.decrypt(slice);
+			sliceDecrMap.put(i, slice);
+		}
+		StringBuilder combine = new StringBuilder();
+		for(int n = 0 ; n < input.length() ; n++){
+			combine.append('a');
+		}
+		for(int i : sliceDecrMap.keySet()){
+			for(int j = 0 ; j < sliceDecrMap.get(i).length() ; j++){
+				combine.setCharAt(num*j+i, sliceDecrMap.get(i).charAt(j));
+			}
+		}
+		System.out.println("Decr:\n" + combine.toString());
+		
+		return combine.toString();	
+	}
+	
+	//encrypt each slices and combine them into one
+	private String helpEncrypt(String input){
+		HashMap<Integer, String> sliceEncrMap = new HashMap<Integer, String>();
+		StringBuilder combine = new StringBuilder();
+		for(int i = 0 ; i < num ;i++){
+			String slice = this.sliceString(input, i, num);
+			cc = new caesarCipher(key[i]);
+			//core method in encryption
+			slice = cc.encrypt(slice);
+			sliceEncrMap.put(i, slice);
+		}
+		for(int n = 0 ; n < input.length() ; n++){
+			combine.append('a');
+		}
+		for(int i : sliceEncrMap.keySet()){
+			for(int j = 0 ; j < sliceEncrMap.get(i).length() ; j++){
+				combine.setCharAt(num*j+i, sliceEncrMap.get(i).charAt(j));
+			}
+		}
+		return combine.toString();
+	}
+	
+	//slice the unencrypted string into several pieces for VC encryption
+	private String sliceString(String input, int whichSlice, int totalSlices){
+		StringBuilder slice = new StringBuilder();
+		for(int m = whichSlice; m<input.length() ; m = m + totalSlices){
+			slice.append(input.charAt(m));
+		}
+		return slice.toString();
+	}
+	
+	public static void main(String[] args) {
+		//insert the encrypted key you want to use in Vigenere Cipher Encryption
+		String encrKey = "flute";
+		
+		//input the file you want to encrypt
+		File file = new File("F:/Java/dukeProgramming/src/VigenereCipher_final/athens.txt");
+		
+		//store the key value in Array of Integer
+		//eg. "flute" = {5, 11, 20, 19, 4}
+		int[] key = new int[encrKey.length()];
+		for(int i = 0; i<encrKey.length() ; i++){
+			int ich = (int)encrKey.charAt(i)-97;
+			key[i] = ich;
+		}
+		
+		//create a vc object with key 
+		VigenereCipher vgn = new VigenereCipher(key);
+		String encrMsg = vgn.encrypt(file);
+		vgn.decrypt(encrMsg);
+	}
+
+}
+===================================================================================================================================
+//fileProcess.java
+//txt -> String method
+package VigenereCipher_final;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+
+public class fileProcess {
+	public String file2String(File file){
+		StringBuilder result = new StringBuilder();
+//		StringBuilder res = new StringBuilder();
+        try{
+        	//read in the file
+            BufferedReader br = new BufferedReader(new FileReader(file));
+            String s = null;
+            //each turn with one line scanning
+            while((s = br.readLine())!=null){
+                result.append(s + System.lineSeparator());        		
+           	}
+        }
+        catch(Exception e){
+           	e.printStackTrace();
+        }
+        return result.toString();
+	}
+}
+====================================================================================================================================
+//caesarCipher.java
+//typical caesar cipher alg.
+package VigenereCipher_final;
+
+public class caesarCipher {
+	
+	private String alphabetUpper;
+	private String alphabetLower;
+	private String initList;
+	private String encrList;
+	
+	//Constructor...
+	public caesarCipher(int shift){
+		alphabetUpper = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+		alphabetLower = alphabetUpper.toLowerCase();
+		initList = alphabetUpper + alphabetLower;
+//		System.out.println("Initial List:\t" + initList);
+		String encr1 = alphabetUpper.substring(shift);
+		encr1 = encr1 + alphabetUpper.substring(0,shift);
+		String encr2 = alphabetLower.substring(shift);
+		encr2 = encr2 + alphabetLower.substring(0, shift);
+		encrList = encr1 + encr2;
+//		System.out.println("Encrypted List:\t" + encrList);
+	}
+	
+	public String encrypt(String str){
+		StringBuilder result = new StringBuilder();
+		for(int k = 0; k<str.length(); k++){
+			int oriIndex=0;
+			int asciiChar = (int)str.charAt(k);
+			if((65<=asciiChar && asciiChar<=90)||(97<=asciiChar && asciiChar<=122) ){
+				oriIndex = initList.indexOf(str.charAt(k));
+				result.append(encrList.charAt(oriIndex));
+			}
+			else
+				result.append(str.charAt(k));
+		}
+		return result.toString();
+	}
+}
+======================================================================================================================================
+//caesarCracker.java
+//caesar cracker taking advantage of counting the most frequent use letter and comparing to 'e'
+package VigenereCipher_final;
+
+public class caesarCracker {
+	
+
+	private int[] lArray;
+	private String alphabetUpper, alphabetLower, initList, decrList;
+	private StringBuilder result;
+	
+	public caesarCracker(){
+		alphabetUpper = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+		alphabetLower = alphabetUpper.toLowerCase();
+		initList = alphabetUpper + alphabetLower;
+//		System.out.println("Initial List:\t" + initList);
+		lArray = new int[26];
+		for(int i = 0 ; i<26 ; i++){
+			lArray[i] = 0;
+		}
+		result = new StringBuilder();
+	}
+	
+	private int findMostFeqLetter(){
+		int l = 0;
+		int maxNum = Integer.MIN_VALUE;
+		for(int i = 0 ; i<26 ; i++){
+			if(maxNum < lArray[i]){
+				maxNum = lArray[i];
+				l = i;
+			}
+		}
+//		System.out.println("l: " + l);
+		return l;
+	}
+	
+	public String decrypt(String str){
+		String strl = str.toLowerCase();
+		for(int i = 0; i < strl.length() ; i++){
+			char ch = strl.charAt(i);
+			int ich = (int)ch;
+			if(ich>=97 && ich<=122){
+				lArray[ich-97]++;
+			}
+		}
+		int key = this.findMostFeqLetter()-((int)'e'-97);
+
+		if(key < 0){
+			key = key +26;
+		}
+		
+		String decr1 = alphabetUpper.substring(key);
+		decr1 = decr1 + alphabetUpper.substring(0,key);
+		String decr2 = alphabetLower.substring(key);
+		decr2 = decr2 + alphabetLower.substring(0, key);
+		decrList = decr1 + decr2;
+//		System.out.println("Decrypted List:\t" + decrList);
+		
+		for(int j = 0; j<str.length() ; j++){
+			char ch = str.charAt(j);
+			int ich = (int)ch;
+			if( (ich>=97 && ich<=122) || (ich>=65 && ich<=90) ){
+				int indexCh = decrList.indexOf(ch);
+				String s1 = "" + initList.charAt(indexCh);
+				result.append(s1);
+			}
+			else{
+				String s2 = "" + ch;
+				result.append(s2);
+			}
+				
+		}
+//		System.out.println(result.toString());
+		return result.toString();
+	}
+}
